@@ -1,6 +1,9 @@
 name: Dogfood readiness
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
@@ -30,4 +33,3 @@ jobs:
           python-version: "3.12"
       - run: python3 -m unittest discover -s tests
       - run: python3 -m dogfood_readiness --target "ci smoke" --claim "CLI renders artifacts" --output /tmp/dogfood-readiness-smoke
-
