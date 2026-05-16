@@ -1,0 +1,14 @@
+{
+  "target": "Garnet Phase 6AX",
+  "slice_readiness": 100,
+  "overall_completion": 58.6,
+  "overall_source": "scripts/garnet_mit_readiness_status.py",
+  "blocked_gates": [
+    "Apple Developer ID notarization",
+    "Windows/Linux Studio runtime proof",
+    "provider-backed LLM conversion",
+    "native backend lowering"
+  ],
+  "next_best_slice": "Publish reusable dogfood-readiness fusion skill under Navigata1"
+}
+
