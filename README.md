@@ -26,6 +26,28 @@ python3 -m dogfood_readiness \
   --output .dogfood/readiness
 ```
 
+Attach falsification findings and evidence gaps as a JSON manifest:
+
+```sh
+python3 -m dogfood_readiness \
+  --target "PR 999" \
+  --claim "Converter import path is safe" \
+  --findings .dogfood/findings.json \
+  --missed-checker-failures 2 \
+  --blocked-core-cases 1 \
+  --overall-completion 58.6 \
+  --blocked-gate "notarization" \
+  --overall-source "audit-estimated" \
+  --next-best-slice "close converter evidence gap" \
+  --output .dogfood/readiness
+```
+
+Artifacts:
+
+- `dogfood-readiness-report.md`
+- `dogfood-readiness-data.json`
+- `dogfood-readiness-mutation-log.md`
+
 Validate a PR body against the evidence template:
 
 ```sh

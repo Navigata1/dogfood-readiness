@@ -26,6 +26,16 @@ class Finding:
 
 
 @dataclass(frozen=True)
+class MutationEvent:
+    """A deterministic mutation record for reproducibility auditing."""
+
+    timestamp: str
+    event: str
+    command: str
+    details: str
+
+
+@dataclass(frozen=True)
 class ProgressPulse:
     """High-level status that keeps slice and objective truth separate."""
 
@@ -47,6 +57,7 @@ class ReadinessReport:
     pulse: ProgressPulse
     findings: list[Finding] = field(default_factory=list)
     matrix: list[dict[str, str]] = field(default_factory=list)
+    mutation_log: list[MutationEvent] = field(default_factory=list)
     generated_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat(timespec="seconds")
     )
@@ -57,5 +68,8 @@ class ReadinessReport:
     def write_json(self, path: Path) -> None:
         import json
 
-        path.write_text(json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
 
