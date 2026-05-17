@@ -32,6 +32,12 @@ Validate a PR body against the evidence template:
 python3 scripts/check_pr_body.py --body-file /tmp/pr-body.md
 ```
 
+Check repo-owned GitHub workflow action pins before they become runtime drift:
+
+```sh
+python3 scripts/check_github_actions_node24.py
+```
+
 Install the skill by copying `skills/dogfood-readiness` into your agent skill folder.
 
 ## No-Mistakes Fusion
@@ -62,6 +68,7 @@ If a project has a native status reporter, use it. If not, compute an `audit-est
 - `dogfood_readiness/`: dependency-free Python package and CLI.
 - `skills/dogfood-readiness/`: reusable agent skill.
 - `scripts/check_pr_body.py`: PR evidence gate.
+- `scripts/check_github_actions_node24.py`: GitHub Actions Node 24 readiness gate for repo-owned workflows.
 - `templates/pr-body.md`: PR body template.
 - `.github/workflows/dogfood-readiness.yml`: optional CI gate.
 - `examples/garnet-phase6ax.json`: example progress pulse data.
@@ -71,4 +78,3 @@ If a project has a native status reporter, use it. If not, compute an `audit-est
 - This tool does not replace real tests, CI, security review, release signing, or human judgment.
 - It does not claim a project is production-ready merely because a score is high.
 - It can record external blockers, but it should not pretend to solve account-holder, legal, credential, or hardware-only gates.
-
