@@ -70,6 +70,8 @@ This repo does not vendor or reimplement `no-mistakes`. It borrows the operating
 - A gate should run before merge, not after regret.
 - The human remains in charge, but the evidence should be structured enough that agents cannot hand-wave.
 
+Proof updates are intentionally scoped to this repo only; portable consumers should still keep their own project-local truth and blocker maps in the target evidence bundle.
+
 Where `no-mistakes` acts as a push/PR gate, `dogfood-readiness` acts as the evidence and readiness layer that can be used inside any workflow, including no-mistakes-style pipelines.
 
 ## Progress Pulse
