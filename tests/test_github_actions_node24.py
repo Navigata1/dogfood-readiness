@@ -1,38 +1,89 @@
 import importlib.util
+import tempfile
 import unittest
 from pathlib import Path
-
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "check_github_actions_node24.py"
 SPEC = importlib.util.spec_from_file_location("check_github_actions_node24", SCRIPT_PATH)
 assert SPEC and SPEC.loader
-check_github_actions_node24 = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(check_github_actions_node24)
+node24 = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(node24)
 
 
 class GithubActionsNode24Tests(unittest.TestCase):
-    def test_current_workflows_have_no_runtime_regressions(self):
-        self.assertEqual(check_github_actions_node24.validate(), [])
+    def test_current_repo_workflows_are_node24_ready(self):
+        errors = node24.validate_workflows(Path(__file__).resolve().parents[1])
 
-    def test_old_first_party_action_major_is_rejected(self):
-        text = "steps:\n  - uses: actions/checkout@v4\n"
+        self.assertEqual([], errors)
 
-        errors = check_github_actions_node24.validate_text(Path(".github/workflows/ci.yml"), text)
+    def test_old_first_party_actions_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workflow = root / ".github" / "workflows" / "ci.yml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(
+                "\n".join(
+                    [
+                        "name: stale",
+                        "jobs:",
+                        "  test:",
+                        "    runs-on: ubuntu-latest",
+                        "    steps:",
+                        "      - uses: actions/checkout@v4",
+                        "      - uses: actions/setup-python@v5",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            errors = node24.validate_workflows(root)
+
+        self.assertIn(".github/workflows/ci.yml:6 uses actions/checkout@v4; expected v6+", errors)
+        self.assertIn(".github/workflows/ci.yml:7 uses actions/setup-python@v5; expected v6+", errors)
+
+    def test_codeql_action_runtime_pins_are_rejected(self):
+        text = "steps:\n  - uses: github/codeql-action/analyze@v3\n"
+
+        errors = node24.validate_text(Path(".github/workflows/codeql.yml"), text)
 
         self.assertEqual(
+            [".github/workflows/codeql.yml:2 uses github/codeql-action/analyze@v3; expected v4+"],
             errors,
-            [".github/workflows/ci.yml pins actions/checkout@v4; expected v6+"],
         )
 
-    def test_explicit_node20_variant_is_rejected(self):
-        text = "steps:\n  - uses: example/action-node20@v1\n"
+    def test_explicit_node20_runtime_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workflow = root / ".github" / "workflows" / "ci.yaml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text(
+                "\n".join(
+                    [
+                        "name: stale-runtime",
+                        "jobs:",
+                        "  test:",
+                        "    runs-on: ubuntu-latest",
+                        "    steps:",
+                        "      - run: echo node20",
+                    ]
+                ),
+                encoding="utf-8",
+            )
 
-        errors = check_github_actions_node24.validate_text(Path(".github/workflows/ci.yml"), text)
+            errors = node24.validate_workflows(root)
 
-        self.assertEqual(
-            errors,
-            [".github/workflows/ci.yml mentions node20 explicitly"],
-        )
+        self.assertIn(".github/workflows/ci.yaml:6 references node20 explicitly", errors)
+
+    def test_yaml_extension_is_scanned(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            workflow = root / ".github" / "workflows" / "ci.yaml"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("steps:\n  - uses: actions/checkout@v4\n", encoding="utf-8")
+
+            errors = node24.validate_workflows(root)
+
+        self.assertEqual([".github/workflows/ci.yaml:2 uses actions/checkout@v4; expected v6+"], errors)
 
 
 if __name__ == "__main__":
