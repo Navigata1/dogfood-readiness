@@ -16,7 +16,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Write PR body
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
@@ -28,9 +28,10 @@ jobs:
     name: Python tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - run: python3 scripts/check_github_actions_node24.py
       - run: python3 -m unittest discover -s tests
       - run: python3 -m dogfood_readiness --target "ci smoke" --claim "CLI renders artifacts" --output /tmp/dogfood-readiness-smoke
