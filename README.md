@@ -15,6 +15,8 @@ Evidence-first readiness auditing for pull requests, product slices, apps, tools
 - Produces Markdown, JSON, matrix, mutation-log, and PR-body evidence artifacts.
 - Provides a reusable skill prompt for Codex, Claude Code, and other agent workflows.
 
+`dogfood-readiness` difference is Greptile is a reviewer: it reads a diff and emits a confidence number. dogfood-readiness is not a reviewer and shouldn't try to be one — that's where redundancy would creep in. Its real job is to be the evidence ledger and confidence fuser: it consumes review signals (Greptile's 5/5, and on the Garnet side, diff-caps) as inputs, fuses them with falsification findings and verification evidence into one deterministic, committed score, expresses that as a 1–5 merge-confidence band, and runs the grep-loop — iterate until 5/5 — before merge. Greptile tells you "this PR looks right." dogfood-readiness tells you "here is the committed evidence that it's right, here is the fused confidence across every signal, and here is where this slice sits in a 10-slice goal." No external reviewer produces that artifact. So they compose; they don't collide.  
+
 ## Quick Start
 
 Run a local readiness report from any repository:
