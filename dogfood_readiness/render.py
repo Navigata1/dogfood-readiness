@@ -24,6 +24,11 @@ def render_markdown(report: ReadinessReport) -> str:
         if report.pulse.overall_completion is not None
         else "not available"
     )
+    confidence = (
+        f"{report.pulse.merge_confidence}/5"
+        if report.pulse.merge_confidence is not None
+        else "not scored"
+    )
     blockers = "\n".join(f"- {gate}" for gate in report.pulse.blocked_gates) or "- None recorded."
 
     return f"""# Dogfood Readiness Report
@@ -38,6 +43,7 @@ Claim tested: {report.claim}
 
 - Slice readiness: **{report.pulse.slice_readiness}/100** (`{report.pulse.slice_status}`)
 - Overall objective completion: **{overall}** (`{report.pulse.overall_source}`)
+- Merge confidence: **{confidence}** (`{report.pulse.merge_confidence_source}`)
 - Next best slice: {report.pulse.next_best_slice}
 
 Blocked/deferred gates:

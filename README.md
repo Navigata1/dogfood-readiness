@@ -2,7 +2,7 @@
 
 Evidence-first readiness auditing for pull requests, product slices, apps, tools, programming languages, and agentic build systems.
 
-`dogfood-readiness` is the portable version of the Garnet readiness gate: it treats green tests as evidence, not proof. It combines falsification-oriented dogfooding, no-mistakes-style PR hygiene, explicit progress percentages, and reusable evidence artifacts.
+`dogfood-readiness` is the portable version of the Garnet readiness gate: it treats green tests as evidence, not proof. It is an **evidence ledger and merge-confidence fuser**, not a code reviewer. It combines falsification-oriented dogfooding, no-mistakes-style PR hygiene, explicit progress percentages, reusable evidence artifacts, a 1-5 merge-confidence band that **fuses an external reviewer's score** (e.g. Greptile's grep-loop signal) with its own findings, and a goal-mode ledger that reports where a long-running run actually is.
 
 ## What It Does
 
@@ -86,6 +86,34 @@ Next best slice: package the smallest missing evidence gate
 ```
 
 If a project has a native status reporter, use it. If not, compute an `audit-estimated` percentage and label it honestly.
+
+## Merge Confidence and the Grep Loop
+
+The readiness score (0-100) maps to a 1-5 merge-confidence band — `blocked`=1 ... `ready`=5. A **5/5 stamp == the top band (score >= 95)**. An external reviewer's 1-5 score (e.g. Greptile) is fused in; for a merge **gate** the default `min` lets the weakest signal govern.
+
+```
+python3 -m dogfood_readiness \
+  --target "PR 123" --claim "converter is safe" --output .dogfood/readiness \
+  --external-review-score 4 --external-review-source greptile --fusion-mode min
+```
+
+The grep loop iterates the *fused* confidence to 5/5 before merge, so a confident reviewer alone cannot satisfy it — the falsification ledger must agree. This is why the toolkit complements Greptile rather than duplicating it: Greptile answers "does this look right?"; dogfood-readiness fuses that with deterministic evidence and gates the merge.
+
+## Goal Mode
+
+During a long `/goal` run, overall completion is computed from a persisted ledger, not typed by hand. On slice 1 of 10, completion is 10%.
+
+```
+python3 -m dogfood_readiness --goal-action init --goal-file .dogfood/goal.json \
+  --goal-id phase-a --goal-title "Phase A" --goal-slice s31:reporter --goal-slice s32:fusion
+
+python3 -m dogfood_readiness --goal-action advance --goal-file .dogfood/goal.json \
+  --advance-slice s31 --advance-confidence 5     # refused unless confidence >= threshold
+
+python3 -m dogfood_readiness --goal-action status --goal-file .dogfood/goal.json
+```
+
+A report run given `--goal-file` auto-fills overall completion from the ledger and labels the source `goal-tracked`.
 
 ## Repository Layout
 
