@@ -36,6 +36,38 @@ class MutationEvent:
 
 
 @dataclass(frozen=True)
+class GoalSlice:
+    """One slice in a goal-mode run.
+
+    A goal is an ordered list of slices. Overall completion is the share of
+    slice weight that has reached `merged` status, so a long-running /goal run
+    can report where it is (slice k of N) instead of a hand-typed percentage.
+    """
+
+    id: str
+    title: str
+    weight: float = 1.0
+    status: str = "pending"  # pending | merged
+    merged_at: str | None = None
+    merge_confidence: int | None = None  # 1..5 fused confidence at merge time
+
+
+@dataclass(frozen=True)
+class GoalState:
+    """A persisted goal ledger. Immutable: advancing returns a new state."""
+
+    goal_id: str
+    title: str
+    slices: list[GoalSlice] = field(default_factory=list)
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat(timespec="seconds")
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class ProgressPulse:
     """High-level status that keeps slice and objective truth separate."""
 
@@ -45,6 +77,8 @@ class ProgressPulse:
     overall_source: str
     blocked_gates: list[str]
     next_best_slice: str
+    merge_confidence: int | None = None  # 1..5 fused merge-confidence band
+    merge_confidence_source: str = "internal"  # e.g. "internal-min-greptile"
 
 
 @dataclass(frozen=True)
@@ -72,4 +106,3 @@ class ReadinessReport:
             json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-

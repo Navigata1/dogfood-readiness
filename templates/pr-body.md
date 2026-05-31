@@ -20,6 +20,16 @@
 
 - [ ] Remote checks pending.
 
+### Merge confidence
+
+- [ ] Internal readiness band recorded (1-5; 5 == score >= 95).
+- [ ] External reviewer score recorded with source (e.g. Greptile 4/5), or marked not-run.
+- [ ] Fused merge confidence is **5/5** via the grep loop, or a human deferral is recorded with a reason.
+
+### Goal progress
+
+- [ ] If part of a goal run: overall completion is `goal-tracked` from the ledger (slice k of N), not hand-typed.
+
 ### Evidence bundle
 
 - [x] Evidence artifacts are attached, linked, or copied to a durable project folder.
